@@ -1,0 +1,84 @@
+ผลการทดลองเปรียบเทียบประสิทธิภาพ
+ในการทดลองกำหนดให้ n คือจำนวน Action ที่อยู่ใน Event Stack แล้วทดสอบการทำงานของแต่ละคำสั่ง พบว่าแต่ละคำสั่งมีประสิทธิภาพแตกต่างกัน ดังตาราง
+
+การทำงาน	              จำนวนข้อมูล	     ผลการทดลอง	             Time Complexity
+getNextState()	          1 Action	       ทำงานทันที	             O(1)
+Add Action	              1 Action	       ทำงานทันที	             O(n)*
+Redo	                  1 Action	       ทำงานทันที	             O(1)
+Undo	                  1 Action	       ต้องคำนวณ State ใหม่	     O(n)
+Show Status	              n Actions	       ต้องแสดง Action ทั้งหมด	  O(n)
+Rebuild State	          n Actions	       ตรวจสอบ Action ทุกตัว	 O(n)
+
+หมายเหตุ: Add Action มี redoStack.clear() ดังนั้นในกรณีที่ Redo Stack มีข้อมูลจำนวนมาก การล้าง Stack อาจทำให้ใช้เวลาเพิ่มขึ้นเป็น O(n) แต่หาก Redo Stack ว่าง การเพิ่ม Action จะทำงานในระดับ O(1)
+
+การทดลอง Undo
+
+สมมติว่ามี Action ใน Event Stack ดังนี้
+
+CALL_RECEIVED
+TEAM_ASSIGNED
+VEHICLE_DISPATCHED
+ARRIVED_AT_SCENE
+CASE_CLOSED
+
+เมื่อทำ Undo โปรแกรมจะนำ Action ล่าสุดออกด้วย
+
+eventStack.pop();
+
+จากนั้นเรียก
+
+rebuildState();
+
+เพื่อคำนวณ State ใหม่ตั้งแต่ NEW จนถึง Action ที่เหลืออยู่
+
+ดังนั้นถ้ามี Action จำนวนมาก เวลาในการทำ Undo จะเพิ่มขึ้นตามจำนวน Action
+
+ตัวอย่างการเปรียบเทียบ:
+
+จำนวน Action	Undo ต้องประมวลผลโดยประมาณ	  ประสิทธิภาพ
+100	            100 รายการ	                  เร็วมาก
+1,000	        1,000 รายการ	              เร็ว
+10,000	        10,000 รายการ	              เพิ่มขึ้นตาม n
+50,000	        50,000 รายการ	              ใช้เวลามากขึ้น
+การทดลอง Redo
+
+ในทางตรงกันข้าม Redo ทำงานโดยนำ Action จาก redoStack กลับมาใช้
+
+Action action = redoStack.pop();
+
+
+eventStack.push(action);
+
+
+currentState = nextState;
+
+ไม่มีการเรียก rebuildState() ทำให้ไม่ต้องวนตรวจสอบ Action ทั้งหมด
+
+ดังนั้น
+
+Redo = O(1)
+
+จึงมีประสิทธิภาพดีกว่า Undo เมื่อจำนวน Action เพิ่มขึ้น
+
+เปรียบเทียบ Undo กับ Redo
+จำนวน Action	Undo	     Redo
+100	            O(100)	     O(1)
+1,000	        O(1,000)	 O(1)
+10,000	        O(10,000)	 O(1)
+50,000	        O(50,000)	 O(1)
+
+ผลการทดลอง: เมื่อจำนวน Action เพิ่มขึ้น การทำ Undo จะใช้เวลามากขึ้นตามจำนวน Action เนื่องจากต้องเรียก rebuildState() เพื่อสร้าง State ใหม่ ขณะที่ Redo ยังคงทำงานในเวลาใกล้เคียงคงที่ เพราะใช้เพียง pop() และ push() เท่านั้น
+
+สรุปผลการทดลอง
+
+จากการทดลองพบว่าโปรแกรม EmergencyWorkflow มีประสิทธิภาพโดยรวมอยู่ในระดับดี เนื่องจากการจัดการข้อมูลใช้โครงสร้าง Stack (ArrayDeque) ซึ่งเหมาะกับการทำงานแบบ LIFO (Last In, First Out) โดยการ push() และ pop() สามารถทำงานได้ใน O(1)
+
+อย่างไรก็ตาม จุดที่มีผลต่อประสิทธิภาพมากที่สุดคือการทำ Undo เนื่องจากโปรแกรมต้องเรียก rebuildState() และประมวลผล Action ที่เหลือทั้งหมดอีกครั้ง ทำให้มี Time Complexity เป็น O(n) ในขณะที่ Redo มี Time Complexity เป็น O(1) จึงมีประสิทธิภาพสูงกว่าเมื่อจำนวน Action มีจำนวนมาก
+
+สรุปประสิทธิภาพของโปรแกรม
+
+ดีที่สุด: Redo → O(1)
+ดีที่สุด: getNextState() → O(1)
+ปานกลาง: Add Action → O(1) ถึง O(n) ขึ้นอยู่กับขนาดของ Redo Stack
+ใช้เวลามากที่สุด: Undo → O(n)
+Space Complexity โดยรวม: O(n)
