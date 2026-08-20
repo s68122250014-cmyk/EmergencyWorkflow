@@ -1,0 +1,53 @@
+การวิเคราะห์ Time Complexity
+กำหนดให้ n = จำนวน Action ที่อยู่ใน Event Stack
+
+Method	            การทำงานหลัก	                            Time Complexity
+getNextState()	    ตรวจสอบ State และ Action ด้วย switch	    O(1)
+showActions()	    รับค่าและเลือก Action	                      O(1)
+addAction()	        ตรวจสอบ State + push() + ล้าง Redo Stack	O(n)*
+undo()	            pop() + push() + rebuildState()	           O(n)
+redo()	            pop() + ตรวจ State + push()	               O(1)
+rebuildState()	    วนตรวจสอบ Action ทั้งหมด	                O(n)
+showStatus()	    วนแสดงข้อมูลใน Stack	                    O(n)
+run()	            ทำงานตามจำนวนครั้งที่ผู้ใช้สั่ง	                   ขึ้นอยู่กับจำนวนคำสั่ง
+
+Space Complexity
+โปรแกรมใช้หน่วยความจำหลักจาก Stack 2 ตัว
+
+private Deque<Action> eventStack = new ArrayDeque<>();
+private Deque<Action> redoStack = new ArrayDeque<>();
+
+ถ้ามี Action รวมกันจำนวน n รายการ
+eventStack
+
+สามารถเก็บ Action ได้สูงสุด n รายการ
+Space = O(n)
+redoStack
+
+สามารถเก็บ Action ที่ Undo ได้สูงสุด n รายการ
+Space = O(n)
+rebuildState()
+
+มีการสร้าง Array ชั่วคราว
+Action[] actions = eventStack.toArray(new Action[0]);
+
+ถ้ามี n Action จะใช้พื้นที่เพิ่ม
+Space = O(n)
+
+ดังนั้น Space Complexity โดยรวมยังคงเป็น
+O(n)
+
+สรุปสำหรับใส่รายงาน
+รายการ	               Time Complexity	    Space Complexity
+getNextState()	      O(1)	                O(1)
+addAction()	          O(n) Worst Case	    O(1) เพิ่มข้อมูล 1 Action
+undo()	              O(n)	                O(n) ชั่วคราวจาก rebuildState()
+redo()	              O(1)	                O(1)
+rebuildState()	      O(n)	                O(n)
+showStatus()	      O(n)                  O(1)
+โดยรวม	              O(n)	                O(n)
+
+ข้อสรุป
+จากการวิเคราะห์โค้ด EmergencyWorkflow พบว่า Time Complexity ของการทำงานที่สำคัญที่สุดอยู่ที่ O(n) เนื่องจากการทำ Undo ต้องเรียก rebuildState() ซึ่งวนประมวลผล Action ที่เหลือทั้งหมดใน Event Stack ส่วนการทำ Redo มีประสิทธิภาพสูงกว่า โดยมี Time Complexity เป็น O(1) เนื่องจากสามารถนำ Action จาก Redo Stack กลับมาใช้งานได้โดยตรง
+
+สำหรับ Space Complexity โปรแกรมใช้ eventStack และ redoStack ในการจัดเก็บ Action รวมถึงสร้าง Array ชั่วคราวใน rebuildState() จึงมี Space Complexity โดยรวมเป็น O(n) เมื่อ n คือจำนวน Action ที่จัดเก็บในระบบ

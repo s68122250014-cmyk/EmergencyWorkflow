@@ -1,0 +1,187 @@
+Test Case 1: เพิ่ม Action ตามลำดับที่ถูกต้อง
+รายการ	รายละเอียด
+Test Case ID	TC-01
+Test Scenario	เพิ่ม Action ตามลำดับ Workflow ที่ถูกต้อง
+Initial State	NEW
+Input	1 → 1 → 1 → 2 → 1 → 3 → 1 → 4 → 1 → 5
+Expected Result	State เปลี่ยน NEW → RECEIVED → ASSIGNED → DISPATCHED → ON_SCENE → CLOSED
+Result	PASS
+
+การกด
+
+1  (Add Action)
+1  (CALL_RECEIVED)
+
+1  (Add Action)
+2  (TEAM_ASSIGNED)
+
+1  (Add Action)
+3  (VEHICLE_DISPATCHED)
+
+1  (Add Action)
+4  (ARRIVED_AT_SCENE)
+
+1  (Add Action)
+5  (CASE_CLOSED)
+
+Test Case 2: เพิ่ม Action ผิดลำดับ
+รายการ	รายละเอียด
+Test Case ID	TC-02
+Test Scenario	เพิ่ม Action ที่ไม่ตรงกับ State
+Initial State	NEW
+Input	1 → 2
+Expected Result	แสดง ERROR: Invalid Action! และ State ยังคงเป็น NEW
+Result	PASS
+
+ตัวอย่างผลลัพธ์
+========== Available Actions ==========
+1. CALL_RECEIVED
+2. TEAM_ASSIGNED
+3. VEHICLE_DISPATCHED
+4. ARRIVED_AT_SCENE
+5. CASE_CLOSED
+Enter Action: 2
+
+ERROR: Invalid Action!
+Current State: NEW
+Action: TEAM_ASSIGNED
+
+Test Case 3: Undo
+รายการ	รายละเอียด
+Test Case ID	TC-03
+Test Scenario	Undo Action ล่าสุด
+Initial State	ASSIGNED
+Input	2
+Expected Result	TEAM_ASSIGNED ถูกนำออกจาก Event Stack และ State กลับเป็น RECEIVED
+Result	PASS
+
+ก่อน Undo
+Event Stack:
+- TEAM_ASSIGNED
+- CALL_RECEIVED
+
+Current State: ASSIGNED
+หลัง Undo
+Undo Action: TEAM_ASSIGNED
+Current State: RECEIVED
+
+Test Case 4: Redo
+รายการ	รายละเอียด
+Test Case ID	TC-04
+Test Scenario	Redo Action ที่ Undo ไป
+Initial State	RECEIVED
+Input	3
+Expected Result	TEAM_ASSIGNED กลับเข้า Event Stack และ State เป็น ASSIGNED
+Result	PASS
+
+ผลลัพธ์
+========== REDO ==========
+Redo Action: TEAM_ASSIGNED
+Current State: ASSIGNED
+
+Test Case 5: Undo ตอน Event Stack ว่าง
+รายการ	รายละเอียด
+Test Case ID	TC-05
+Test Scenario	Undo ทั้งที่ยังไม่มี Action
+Initial State	NEW
+Input	2
+Expected Result	แสดง Event Stack is empty
+Result	PASS
+
+ERROR: Event Stack is empty.
+Cannot Undo.
+
+Test Case 6: Redo ตอน Redo Stack ว่าง
+รายการ	รายละเอียด
+Test Case ID	TC-06
+Test Scenario	Redo ทั้งที่ไม่มี Action ที่ถูก Undo
+Initial State	NEW
+Input	3
+Expected Result	แสดง Redo Stack is empty
+Result	PASS
+
+ERROR: Redo Stack is empty.
+Cannot Redo.
+
+Test Case 7: เพิ่ม Action ใหม่หลัง Undo
+รายการ	รายละเอียด
+Test Case ID	TC-07
+Test Scenario	Undo แล้วเพิ่ม Action ใหม่
+Initial State	ASSIGNED
+Input	2 → 1 → 2
+Expected Result	หลังเพิ่ม Action ใหม่ Redo Stack ต้องถูกล้าง
+Result	PASS
+ลำดับการทดสอบ
+State: ASSIGNED
+
+กด 2 → Undo TEAM_ASSIGNED
+State: RECEIVED
+
+กด 1 → Add Action
+กด 2 → TEAM_ASSIGNED
+
+ผลที่คาดหวัง
+SUCCESS!
+Action: TEAM_ASSIGNED
+Current State: ASSIGNED
+Redo Stack: CLEARED
+
+Test Case 8: ปิด Case แล้วเพิ่ม Action
+รายการ	รายละเอียด
+Test Case ID	TC-08
+Test Scenario	พยายามเพิ่ม Action หลัง Case ถูกปิด
+Initial State	CLOSED
+Input	1
+Expected Result	ไม่สามารถเพิ่ม Action ได้
+Result	PASS
+
+ERROR: Case is already CLOSED.
+Cannot add new Action.
+
+Test Case 9: ตรวจสอบ Status
+รายการ	รายละเอียด
+Test Case ID	TC-09
+Test Scenario	ตรวจสอบสถานะของระบบ
+Initial State	ASSIGNED
+Input	4
+Expected Result	แสดง Current State, Event Stack และ Redo Stack
+Result	PASS
+ตัวอย่าง
+========================================
+                 STATUS
+========================================
+Current State: ASSIGNED
+
+Event Stack:
+- TEAM_ASSIGNED
+- CALL_RECEIVED
+
+Redo Stack:
+EMPTY
+========================================
+
+Test Case 10: ใส่ Menu ผิด
+รายการ	รายละเอียด
+Test Case ID	TC-10
+Test Scenario	ใส่หมายเลข Menu ที่ไม่มี
+Initial State	NEW
+Input	9
+Expected Result	แสดง ERROR: Invalid menu choice.
+Result	PASS
+Enter choice: 9
+
+ERROR: Invalid menu choice.
+
+สรุป Test Case
+| TC    | Test                | Expected |
+| ----- | ------------------- | -------- |
+| TC-01 | Add Action ถูกลำดับ   | PASS     |
+| TC-02 | Add Action ผิดลำดับ   | PASS     |
+| TC-03 | Undo                | PASS     |
+| TC-04 | Redo                | PASS     |
+| TC-05 | Undo Stack ว่าง      | PASS     |
+| TC-06 | Redo Stack ว่าง      | PASS     |
+| TC-07 | Add หลัง Undo       | PASS     |
+| TC-08 | Add หลัง CLOSED     | PASS     |
+| TC-09 | Show Status        | PASS     |
+| TC-10 | Menu ผิด            | PASS     |
